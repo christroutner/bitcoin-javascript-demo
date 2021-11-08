@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* @flow */
 
 export function base64encode(str : string) : string {
@@ -5,7 +6,7 @@ export function base64encode(str : string) : string {
         if (typeof window !== 'undefined' && window.atob) {
             return window.btoa(str).replace(/[=]/g, '');
         }
-    
+
         return Buffer.from(str, 'utf8').toString('base64').replace(/[=]/g, '');
     } catch (err) {
         throw new Error(`Can not encode string: ${ JSON.stringify(str) }:\n\n${ err.stack }`);
@@ -150,7 +151,7 @@ export function divisibleBy(num : number | string, divisor : number, base : numb
     if (typeof num === 'string') {
         num = parseInt(num, base);
     }
-    
+
     return (num % divisor) === 0;
 }
 

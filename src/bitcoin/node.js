@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* @flow */
 
 import { KeyPair, signAndPack, verifySignatureAndUnpack } from '../lib/crypto';

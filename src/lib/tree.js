@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* @flow */
 
 export type TreeNodeType<T> = {|
@@ -71,7 +72,7 @@ export function TreeNode<T>(value : T) : TreeNodeType<T> {
             const longestSubBranch = branch.getLongestBranchAndLength();
 
             if (!longestBranch || longestSubBranch.length >= longestBranch.length) {
-                longestBranch = longestSubBranch; 
+                longestBranch = longestSubBranch;
             }
         }
 

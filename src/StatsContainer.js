@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import { ResponsiveLine } from '@nivo/line'
 
@@ -25,7 +26,7 @@ class StatsContainer extends React.Component {
         totalBlockDiffs.push(Math.abs(currTime - prevTime));
       }
     }
- 
+
     this.setState({
       currReward: blocks[0].reward,
       currDiff: blocks[0].difficulty,

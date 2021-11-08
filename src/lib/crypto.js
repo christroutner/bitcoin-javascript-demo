@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* @flow */
 
 // import { stringToArrayBuffer, arrayBufferToBase64, base64ToArrayBuffer, base64encode, base64decode, safeJSONStringify } from './util';

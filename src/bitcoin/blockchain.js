@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* @flow */
 
 import { hashAndPack, unpackHash, verifyHashAndUnpack, verifySignatureAndUnpack } from '../lib/crypto';

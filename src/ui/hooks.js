@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 import { useEffect, useState } from 'react';
 
 import { BitcoinNode } from '../bitcoin/node';

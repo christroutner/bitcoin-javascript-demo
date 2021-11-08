@@ -1,6 +1,8 @@
 /* @flow */
 
-import { stringToArrayBuffer, arrayBufferToBase64, base64ToArrayBuffer, base64encode, base64decode, safeJSONStringify } from './util';
+// import { stringToArrayBuffer, arrayBufferToBase64, base64ToArrayBuffer, base64encode, base64decode, safeJSONStringify } from './util';
+const { BitcoinUtil } = require('./util2')
+const bUtil = new BitcoinUtil()
 
 const KEY_DATA = {
     name: 'RSASSA-PKCS1-v1_5',
@@ -39,18 +41,18 @@ export function KeyPair() : {| publicKey : Promise<string>, privateKey : Promise
         KEY_OPS
     );
 
-    const privateKey = keyPairPromise.then(({ privateKey }) => crypto.subtle.exportKey('jwk', privateKey)).then(safeJSONStringify).then(base64encode);
-    const publicKey = keyPairPromise.then(({ publicKey }) => crypto.subtle.exportKey('jwk', publicKey)).then(safeJSONStringify).then(base64encode);
-    
+    const privateKey = keyPairPromise.then(({ privateKey }) => crypto.subtle.exportKey('jwk', privateKey)).then(bUtil.safeJSONStringify).then(bUtil.base64encode);
+    const publicKey = keyPairPromise.then(({ publicKey }) => crypto.subtle.exportKey('jwk', publicKey)).then(bUtil.safeJSONStringify).then(bUtil.base64encode);
+
     return { privateKey, publicKey };
 }
 
 export async function sign<T>(data : T | string, privateKey : string) : Promise<string> {
-    return arrayBufferToBase64(
+    return bUtil.arrayBufferToBase64(
         await crypto.subtle.sign(
             'RSASSA-PKCS1-v1_5',
-            await crypto.subtle.importKey('jwk', JSON.parse(base64decode(privateKey)), KEY_DATA, true, [ 'sign' ]),
-            stringToArrayBuffer(typeof data === 'string' ? data : safeJSONStringify(data))
+            await crypto.subtle.importKey('jwk', JSON.parse(bUtil.base64decode(privateKey)), KEY_DATA, true, [ 'sign' ]),
+            bUtil.stringToArrayBuffer(typeof data === 'string' ? data : bUtil.safeJSONStringify(data))
         )
     );
 }
@@ -58,15 +60,15 @@ export async function sign<T>(data : T | string, privateKey : string) : Promise<
 export async function verifySignature<T>(data : T | string, signature : string, publicKey : string) : Promise<boolean> {
     return await crypto.subtle.verify(
         'RSASSA-PKCS1-v1_5',
-        await crypto.subtle.importKey('jwk', JSON.parse(base64decode(publicKey)), KEY_DATA, true, [ 'verify' ]),
-        base64ToArrayBuffer(signature),
-        stringToArrayBuffer(typeof data === 'string' ? data : safeJSONStringify(data))
+        await crypto.subtle.importKey('jwk', JSON.parse(bUtil.base64decode(publicKey)), KEY_DATA, true, [ 'verify' ]),
+        bUtil.base64ToArrayBuffer(signature),
+        bUtil.stringToArrayBuffer(typeof data === 'string' ? data : bUtil.safeJSONStringify(data))
     );
 }
 
 export async function signAndPack<T>(data : T, publicKey : string, privateKey : string) : Promise<string> {
     const signature = await sign(data, privateKey);
-    const signedData = base64encode(safeJSONStringify({
+    const signedData = bUtil.base64encode(bUtil.safeJSONStringify({
         data,
         publicKey,
         signature
@@ -76,7 +78,7 @@ export async function signAndPack<T>(data : T, publicKey : string, privateKey : 
 }
 
 export async function verifySignatureAndUnpack<T>(packedData : string) : Promise<T> {
-    const { data, publicKey, signature } = JSON.parse(base64decode(packedData));
+    const { data, publicKey, signature } = JSON.parse(bUtil.base64decode(packedData));
     if (!await verifySignature(data, signature, publicKey)) {
         throw new Error(`Data signature does not match!`);
     }
@@ -84,31 +86,31 @@ export async function verifySignatureAndUnpack<T>(packedData : string) : Promise
 }
 
 export async function verifyPackedSignature(packedData : string) : Promise<boolean> {
-    const { data, publicKey, signature } = JSON.parse(base64decode(packedData));
+    const { data, publicKey, signature } = JSON.parse(bUtil.base64decode(packedData));
     return await verifySignature(data, signature, publicKey);
 }
 
 export function unpackSignature(packedData : string) : string {
-    const { signature } = JSON.parse(base64decode(packedData));
+    const { signature } = JSON.parse(bUtil.base64decode(packedData));
     return signature;
 }
 
 export function unpackPublicKey(packedData : string) : string {
-    const { publicKey } = JSON.parse(base64decode(packedData));
+    const { publicKey } = JSON.parse(bUtil.base64decode(packedData));
     return publicKey;
 }
 
 export async function hash<T>(data : T) : Promise<string> {
-    return await sign(typeof data === 'string' ? data : safeJSONStringify(data), HASH_PRIVATE_KEY);
+    return await sign(typeof data === 'string' ? data : bUtil.safeJSONStringify(data), HASH_PRIVATE_KEY);
 }
 
 export async function verifyHash<T>(data : T | string, hashedData : string) : Promise<boolean> {
-    return await verifySignature(typeof data === 'string' ? data : safeJSONStringify(data), hashedData, HASH_PUBLIC_KEY);
+    return await verifySignature(typeof data === 'string' ? data : bUtil.safeJSONStringify(data), hashedData, HASH_PUBLIC_KEY);
 }
 
 export async function hashAndPack<T>(data : T) : Promise<string> {
     const dataHash = await hash(data);
-    const packedData = base64encode(safeJSONStringify({
+    const packedData = bUtil.base64encode(bUtil.safeJSONStringify({
         data,
         hash: dataHash
     }));
@@ -117,7 +119,7 @@ export async function hashAndPack<T>(data : T) : Promise<string> {
 }
 
 export async function verifyHashAndUnpack<T>(packedData : string) : Promise<T> {
-    const { data, hash } = JSON.parse(base64decode(packedData));
+    const { data, hash } = JSON.parse(bUtil.base64decode(packedData));
     if (!await verifyHash(data, hash)) {
         throw new Error(`Data hash does not match!`);
     }
@@ -125,6 +127,6 @@ export async function verifyHashAndUnpack<T>(packedData : string) : Promise<T> {
 }
 
 export function unpackHash(packedData : string) : string {
-    const { hash } = JSON.parse(base64decode(packedData));
+    const { hash } = JSON.parse(bUtil.base64decode(packedData));
     return hash;
 }

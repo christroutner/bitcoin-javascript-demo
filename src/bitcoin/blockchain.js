@@ -2,9 +2,11 @@
 
 import { hashAndPack, unpackHash, verifyHashAndUnpack, verifySignatureAndUnpack } from '../lib/crypto';
 import { TreeNode, type TreeNodeType } from '../lib/tree';
-import { asyncMap, Counter, divisibleBy, now, uniqueID } from '../lib/util';
 
 import { BLOCK_TIME, GENESIS_BLOCK, REWARD_HALVING_SCHEDULE, type BlockType } from './constants';
+// import { asyncMap, Counter, divisibleBy, now, uniqueID } from '../lib/util';
+const { BitcoinUtil, Counter } = require('../lib/util2')
+const bUtil = new BitcoinUtil()
 
 export type BlockChainType = {|
     getBlocks : () => TreeNodeType<BlockType>,
@@ -27,30 +29,30 @@ export function BlockChain() : BlockChainType {
             miner,
             parentid:     id,
             index:        index + 1,
-            id:           uniqueID(),
-            time:         now(),
-            elapsed:      now() - time,
+            id:           bUtil.uniqueID(),
+            time:         bUtil.now(),
+            elapsed:      bUtil.now() - time,
             transactions: signedTransactions,
             difficulty:   difficulty + (elapsed > BLOCK_TIME ? -1 : +1),
-            reward:       divisibleBy(index, REWARD_HALVING_SCHEDULE) ? reward/2 : reward
+            reward:       bUtil.divisibleBy(index, REWARD_HALVING_SCHEDULE) ? reward/2 : reward
         };
 
         const hashedBlock = await hashAndPack(blockCandidate);
         const hash = unpackHash(hashedBlock);
 
-        if (divisibleBy(hash, blockCandidate.difficulty)) {
+        if (bUtil.divisibleBy(hash, blockCandidate.difficulty)) {
             return hashedBlock;
         }
     };
 
     const addBlock = async (hashedBlock : string) => {
         const block = await verifyHashAndUnpack(hashedBlock);
-        const transactions = await asyncMap(block.transactions, verifySignatureAndUnpack);
-        
+        const transactions = await bUtil.asyncMap(block.transactions, verifySignatureAndUnpack);
+
         const blockCandidate = { ...block, transactions };
         const hash = unpackHash(hashedBlock);
 
-        if (!divisibleBy(hash, blockCandidate.difficulty)) {
+        if (!bUtil.divisibleBy(hash, blockCandidate.difficulty)) {
             return;
         }
 
@@ -69,7 +71,7 @@ export function BlockChain() : BlockChainType {
             for (const { receiver, amount, fee, sender } of transactions) {
                 balances.add(receiver, amount);
                 balances.subtract(sender, amount);
-                
+
                 balances.add(miner, fee);
                 balances.subtract(sender, fee);
             }

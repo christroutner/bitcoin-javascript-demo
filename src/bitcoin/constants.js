@@ -1,6 +1,8 @@
 /* @flow */
 
-import { now } from "../lib/util"
+// import { now } from "../lib/util"
+const { BitcoinUtil } = require('../lib/util2')
+const bUtil = new BitcoinUtil()
 
 export type TransactionType = {|
     sender : string,
@@ -10,14 +12,14 @@ export type TransactionType = {|
 |};
 
 export type BlockType = {|
-    miner : string,
-    parentid : ?string,
+    miner : string, // Miner ID
+    parentid : ?string, // Parent block
     id : string,
     index : number,
     time : number,
-    elapsed : number,
+    elapsed : number, // Time elapsed sine last block
     transactions : Array<TransactionType>,
-    difficulty : number,
+    difficulty : number, // Difficulty value
     reward : number
 |};
 
@@ -32,7 +34,7 @@ export const GENESIS_BLOCK : BlockType = {
     id:           'GENESIS',
     miner:        'SATOSHI',
     index:        1,
-    time:         now(),
+    time:         bUtil.now(),
     elapsed:      0,
     transactions: [],
     difficulty:   1,
@@ -41,4 +43,3 @@ export const GENESIS_BLOCK : BlockType = {
 
 export const PRICE_FORMULA = (days : number) : number =>
     10 ** (2.9065 * Math.log(days) - 19.493);
-

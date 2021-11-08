@@ -3,7 +3,10 @@ import { useEffect, useState } from 'react';
 
 import { BitcoinNode } from '../bitcoin/node';
 import { hashAndPack, unpackHash, verifySignatureAndUnpack } from '../lib/crypto';
-import { asyncMap, randomEntry } from '../lib/util';
+
+// import { asyncMap, randomEntry } from '../lib/util';
+const { BitcoinUtil } = require('../lib/util2')
+const bUtil = new BitcoinUtil()
 
 const MAX_ID_LENGTH = 10;
 
@@ -38,7 +41,7 @@ export function useNodes() {
 
     setInterval(async () => {
       const firstNode = rawNodes[0];
-    
+
       const blockChain = firstNode.getBlockChain();
       const longestChain = blockChain.getBlocks().getRoot().getLongestChain();
       const rawBalances = await blockChain.getBalances();
@@ -74,7 +77,7 @@ export function useNodes() {
       }
       setBlocks(blocks);
 
-      const mempool = await asyncMap(
+      const mempool = await bUtil.asyncMap(
         firstNode.getMemPool(),
           async (signedTransaction) => {
             const { sender, receiver, amount, fee } = await verifySignatureAndUnpack(signedTransaction);
@@ -95,7 +98,7 @@ export function useNodes() {
         sent = {};
       }
 
-      const sender = randomEntry(rawNodes);
+      const sender = bUtil.randomEntry(rawNodes);
       const senderPublicKey = await sender.getPublicKey();
 
       if (sent[senderPublicKey]) {
@@ -105,7 +108,7 @@ export function useNodes() {
 
       let receiver;
       while (!receiver || receiver === sender) {
-        receiver = randomEntry(rawNodes);
+        receiver = bUtil.randomEntry(rawNodes);
       }
       const receiverPublicKey = await receiver.getPublicKey();
 

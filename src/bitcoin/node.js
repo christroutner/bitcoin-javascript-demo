@@ -1,11 +1,16 @@
 /* @flow */
 
 import { KeyPair, signAndPack, verifySignatureAndUnpack } from '../lib/crypto';
-import { loop } from '../lib/util';
 import { Network } from '../lib/network';
 
 import { BlockChain, type BlockChainType } from './blockchain';
 import { BLOCK_SIZE_LIMIT } from './constants';
+
+// import { loop } from '../lib/util';
+const { BitcoinUtil } = require('../lib/util2')
+const bUtil = new BitcoinUtil()
+
+
 
 type BitcoinNodeType = {|
     getPublicKey : () => Promise<string>,
@@ -42,11 +47,11 @@ export function BitcoinNode() : BitcoinNodeType {
 
         if (sender && receiver && amount && fee) {
             mempool.push(signedTransaction);
-        } 
+        }
     });
 
     const mine = async () : Promise<void> => {
-        await loop(async () => {
+        await bUtil.loop(async () => {
             const signedTransactions = mempool.slice(0, BLOCK_SIZE_LIMIT);
             const hashedBlock = await createBlock(await publicKey, signedTransactions);
 
@@ -55,7 +60,7 @@ export function BitcoinNode() : BitcoinNodeType {
             }
         });
     };
-    
+
     listen('ADD_BLOCK', async (hashedBlock) => {
         mempool.length = 0;
         await addBlock(hashedBlock);
